@@ -15,8 +15,8 @@ with open('07.txt', 'r') as input:
 				numbers.append(int(number))
 
 # partie 1
-def Read_Program(input_value1,input_value2,data):
-	counter=0
+def Read_Program(input_value1,input_value2,data,partie_2,counter):
+	#counter=0
 	counter_input=0
 	while counter < len(data):
 		try:
@@ -78,6 +78,8 @@ def Read_Program(input_value1,input_value2,data):
 					output_value=data[data[counter+1]]
 				elif p1==1:
 					output_value=data[counter+1]
+				if partie_2 ==1:
+					return (output_value,data,counter+2)
 				counter=counter+2
 			elif str(data[counter])[-2:] == "05" or str(data[counter])[-2:] == "5": #jump if true
 				try:
@@ -207,41 +209,60 @@ def Read_Program(input_value1,input_value2,data):
 				counter=counter+4
 			elif str(data[counter])[-2:] == "99":
 				#print("Opcode 99, fin du programme")
+				if partie_2 ==1:
+					return ("kaput",data,counter)
 				break
 			else:
 				print("Opcode non reconnu, fin du programme")
-				return ("kaput-" + str(output_value))
+				#return ("kaput-" + str(output_value))
 				break
 		except:
 			print("Problème d'indice, fin du programme")
-			return ("kaput-" + str(output_value))
+			#return ("kaput-" + str(output_value))
 			break
-	return output_value
+	return (output_value,data,counter)
 
+#partie 1
 max_output=0
 for x in list(itertools.permutations([0,1,2,3,4])):
-	curr_output=Read_Program(x[4],Read_Program(x[3],Read_Program(x[2],Read_Program(x[1],Read_Program(x[0],0,numbers.copy()),numbers.copy()),numbers.copy()),numbers.copy()),numbers.copy())
+	curr_output=Read_Program(x[4],Read_Program(x[3],Read_Program(x[2],Read_Program(x[1],Read_Program(x[0],0,numbers.copy(),0,0)[0],numbers.copy(),0,0)[0],numbers.copy(),0,0)[0],numbers.copy(),0,0)[0],numbers.copy(),0,0)[0]
 	if max_output < curr_output:
 		max_output = curr_output
 print("Output for part 1: " + str(max_output))
 
-# partie 2 (qui ne fonctionne pas encore)
-# max_output=0
-# curr_output=0
-# last_e = 0
-# for x in [[9,8,7,6,5]]:#itertools.permutations([5,6,7,8,9])):
-	# y=-1
-	# broke=0
-	# while broke==0:
-		# y+=1
-		# try:
-			# curr_output=Read_Program(x[y%5],curr_output,numbers.copy())
-			# if y%5==4:
-				# last_e = curr_output
-		# except:
-			# print(last_e)
-			# broke=1
-			# curr_output = last_e
-	# if max_output < last_e:
-		# max_output = last_e
-# print("Output for part 2: " + str(max_output))
+# partie 2
+max_output=0
+for x in itertools.permutations([5,6,7,8,9]): #[[9,8,7,6,5]]:
+	y=-1
+	curr_output=0
+	last_e = 0
+	ampli=[[],[],[],[],[]]
+	indice=[0,0,0,0,0]
+	broke=0
+	while broke==0:
+		y+=1
+		try:
+			if y<5:
+				#print("Program on amp " + str(y) + " started with input:" + str(curr_output) + " and counter:" + str(indice[y]))
+				(curr_output,ampli[y],indice[y])=Read_Program(x[y],curr_output,numbers.copy(),1,0)
+				#print("Program on amp " + str(y) + " ended with curr_output:" + str(curr_output) + " and counter:" + str(indice[y]))
+				if isinstance(curr_output, str):
+					broke=1
+					break
+			else:
+				#print("Program on amp " + str(y%5) + " started with input:" + str(curr_output) + " and counter:" + str(indice[y%5]))
+				(curr_output,ampli[y%5],indice[y%5])=Read_Program(curr_output,curr_output,ampli[y%5],1,indice[y%5])
+				#print("Program on amp " + str(y%5) + " ended with curr_output:" + str(curr_output) + " and counter:" + str(indice[y%5]))
+				if isinstance(curr_output, str):
+					broke=1
+					break
+			if y%5==4:
+				last_e = curr_output
+		except:
+			#print("Reached exception")
+			#print(last_e)
+			broke=1
+			curr_output = last_e
+	if max_output < last_e:
+		max_output = last_e
+print("Output for part 2: " + str(max_output))
